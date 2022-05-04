@@ -3,15 +3,18 @@ import FeedbackContext from '../context/FeedbackCotext'
 import { motion, AnimatePresence } from 'framer-motion'
 
 import FeedbackItem from './FeedbackItem'
+import Loading from './shared/Loading'
 
 function FeedbackList() {
-  const { feedback } = useContext(FeedbackContext)
+  const { feedback, isLoading } = useContext(FeedbackContext)
 
-  if (!feedback || feedback.length === 0) {
+  if (!isLoading && (!feedback || feedback.length === 0)) {
     return <p>No Feedback to display!</p>
   }
 
-  return (
+  return isLoading ? (
+    <Loading />
+  ) : (
     <div className='feedback-list'>
       <AnimatePresence>
         {feedback.map((item) => (
@@ -31,19 +34,6 @@ function FeedbackList() {
         ))}
       </AnimatePresence>
     </div>
-
-    // return (
-    //   <div className='feedback-list'>
-    //     {feedback.map((item) => (
-    //       <FeedbackItem
-    //         key={item.id}
-    //         rating={item.rating}
-    //         text={item.text}
-    //         handleDelete={handleDelete}
-    //         id={item.id}
-    //       />
-    //     ))}
-    //   </div>
   )
 }
 
