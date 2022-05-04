@@ -1,5 +1,4 @@
 import { createContext, useState, useEffect } from 'react'
-import { v4 as uuidv4 } from 'uuid'
 
 const FeedbackContext = createContext()
 
@@ -17,9 +16,7 @@ export const FeedbackProvider = ({ children }) => {
 
   // fetch feedback from json server
   const fetchFeedback = async () => {
-    const res = await fetch(
-      'http://localhost:7777/feedback?_sort=id&_order=desc'
-    )
+    const res = await fetch('/feedback?_sort=id&_order=desc')
     const data = await res.json()
 
     setFeedback(data)
@@ -27,17 +24,27 @@ export const FeedbackProvider = ({ children }) => {
   }
 
   // handles feedback deletion
-  const deleteFeedback = (id) => {
+  const deleteFeedback = async (id) => {
     if (window.confirm('Are you sure you want to delete the feedback?')) {
+      await fetch(`feedback/${id}`, { method: 'DELETE' })
+
       setFeedback(feedback.filter((item) => item.id !== id))
     }
   }
 
   // handles adding new feedback
-  const addFeedback = (newFeedback) => {
-    newFeedback.id = uuidv4()
+  const addFeedback = async (newFeedback) => {
+    // grabs the post response
+    const res = await fetch('/feedback', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newFeedback),
+    })
+    const data = await res.json()
 
-    setFeedback([newFeedback, ...feedback])
+    setFeedback([data, ...feedback])
   }
 
   //handles flagging the feedback for editing
@@ -49,18 +56,30 @@ export const FeedbackProvider = ({ children }) => {
   }
 
   // update the feedback
-  const updateFeedback = (id, updatedItem) => {
+  const updateFeedback = async (id, updatedItem) => {
+    // grabs the PUT response from the server
+    const res = await fetch(`/feedback/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedItem),
+    })
+
+    const data = await res.json()
+
     setFeedback(
       feedback.map((item) =>
         item.id === id
           ? {
               ...item,
-              ...updatedItem,
+              ...data,
             }
           : item
       )
     )
 
+    // clears the edit flag
     setFeedbackEdit({
       item: {},
       edit: false,
